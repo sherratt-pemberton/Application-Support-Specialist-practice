@@ -1,0 +1,79 @@
+4. SOLUTIONS (ALL AT THE END)
+Below are representative solutions.
+ (You should still validate each ticket before running fixes.)
+
+Ticket 1 — Solution
+UPDATE user_access
+SET revoked_at = NOW()
+WHERE status = 'revoked'
+  AND revoked_at IS NULL;
+
+
+Ticket 2 — Solution
+UPDATE user_access ua
+JOIN (
+  SELECT MIN(access_id) keep_id, user_id, application_id
+  FROM user_access
+  WHERE status = 'active'
+  GROUP BY user_id, application_id
+  HAVING COUNT(*) > 1
+) d ON ua.user_id = d.user_id
+   AND ua.application_id = d.application_id
+   AND ua.access_id <> d.keep_id
+SET ua.status = 'revoked',
+    ua.revoked_at = NOW();
+
+
+Ticket 3 — Solution
+UPDATE user_access
+SET status = 'revoked',
+    revoked_at = NOW()
+WHERE granted_at > NOW()
+  AND status = 'active';
+
+
+Ticket 4 — Solution
+UPDATE incidents i
+JOIN user_access ua
+  ON i.user_id = ua.user_id
+ AND i.application_id = ua.application_id
+SET i.status = 'resolved',
+    i.resolved_at = NOW()
+WHERE ua.status = 'revoked'
+  AND i.status = 'open';
+
+
+Ticket 5 — Solution
+UPDATE incidents
+SET resolved_at = NOW()
+WHERE status = 'resolved'
+  AND resolved_at IS NULL;
+
+
+Ticket 6 — Solution
+UPDATE user_access ua
+JOIN applications a ON a.application_id = ua.application_id
+SET ua.access_level = 'write'
+WHERE a.environment = 'prod'
+  AND ua.access_level = 'admin';
+
+
+Ticket 20 — Solution (Compliance sweep)
+UPDATE user_access ua
+JOIN users u ON u.user_id = ua.user_id
+JOIN applications a ON a.application_id = ua.application_id
+SET ua.status = 'revoked',
+    ua.revoked_at = NOW()
+WHERE u.status IN ('inactive','locked')
+  AND ua.status = 'active'
+  AND a.environment = 'prod';
+
+
+Discovery tickets (example: Ticket 21)
+SELECT i.*
+FROM incidents i
+JOIN users u ON u.user_id = i.user_id
+WHERE u.status = 'locked'
+  AND i.status = 'open';
+
+(If rows exist → resolve; if not → ticket is valid but no action.)
