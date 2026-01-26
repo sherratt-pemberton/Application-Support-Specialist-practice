@@ -1,0 +1,63 @@
+3. DISCOVERY-BASED TICKETS (21–40)
+These make no claims.
+ Zero rows returned is a valid outcome.
+
+Ticket 21 — Are any locked users generating incidents?
+Goal: Identify and resolve if found.
+
+Ticket 22 — Do any users have access but no user record?
+Goal: Revoke orphaned access.
+
+Ticket 23 — Are there incidents for applications that don’t exist?
+Goal: Resolve orphans.
+
+Ticket 24 — Any prod access with test-only users?
+Goal: Revoke incorrect access.
+
+Ticket 25 — Any users with write access but no read access?
+Goal: Correct hierarchy.
+
+Ticket 26 — Are there incidents tied to inactive users?
+Goal: Resolve incidents.
+
+Ticket 27 — Any users with access to all applications?
+Goal: Flag for review.
+
+Ticket 28 — Any applications with zero incidents ever?
+Goal: Inform monitoring gaps.
+
+Ticket 29 — Any users with incidents but no access?
+Goal: Restore access or close incidents.
+
+Ticket 30 — Are there duplicate incidents with same timestamp?
+Goal: Deduplicate.
+
+Ticket 31 — Any access rows missing granted_at?
+Goal: Correct audit data.
+
+Ticket 32 — Any users with prod admin and test admin?
+Goal: Reduce prod role.
+
+Ticket 33 — Any incidents resolved before created?
+Goal: Fix timestamps.
+
+Ticket 34 — Any users locked after access granted?
+Goal: Revoke access.
+
+Ticket 35 — Any incidents open longer than SLA (e.g. 14 days)?
+Goal: Resolve or escalate.
+
+Ticket 36 — Any prod access without vendor escalation history?
+Goal: Flag (no change).
+
+Ticket 37 — Any access rows never used (no incidents)?
+Goal: Review necessity.
+
+Ticket 38 — Any users with access to prod but only test incidents?
+Goal: Investigate mismatch.
+
+Ticket 39 — Any revoked access still generating incidents?
+Goal: Resolve incidents.
+
+Ticket 40 — Global compliance snapshot
+Goal: Report current risk state (no change).
