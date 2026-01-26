@@ -1,0 +1,48 @@
+first pass contains all duplicates
+# access_id	user_id	application_id	access_level	granted_at	status	revoked_at
+16	1	1	read	2026-01-31 00:29:34	active	
+542	1	1	read	2026-01-24 00:29:17	active	
+20	2	1	read	2026-01-21 16:33:40	active	
+527	2	1	x	2026-01-21 16:33:40	active	
+40	10	1	read	2026-01-13 16:33:40	active	
+531	10	1	read	2026-01-13 16:33:40	active	
+80	25	1	admin	2025-12-29 16:33:40	active	
+535	25	1	admin	2025-12-29 16:33:40	active	
+19	2	2	read	2026-01-21 16:33:40	active	
+526	2	2	read	2026-01-21 16:33:40	active	
+39	10	2	read	2026-01-13 16:33:40	active	
+530	10	2	read	2026-01-13 16:33:40	active	
+79	25	2	admin	2025-12-29 16:33:40	active	
+534	25	2	admin	2025-12-29 16:33:40	active	
+18	2	4	read	2026-01-21 16:33:40	active	
+525	2	4	read	2026-01-21 16:33:40	active	
+544	2	4	read	2026-01-24 00:29:17	active	
+38	10	4	read	2026-01-13 16:33:40	active	
+529	10	4	read	2026-01-13 16:33:40	active	
+78	25	4	admin	2025-12-29 16:33:40	active	
+533	25	4	admin	2025-12-29 16:33:40	active	
+17	2	5	read	2026-01-31 00:29:34	active	
+524	2	5	read	2026-01-21 16:33:40	active	
+543	2	5	read	2026-01-24 00:29:17	active	
+37	10	5	read	2026-01-13 16:33:40	active	
+528	10	5	read	2026-01-13 16:33:40	active	
+77	25	5	admin	2025-12-29 16:33:40	active	
+532	25	5	admin	2025-12-29 16:33:40	active	
+
+revised pass contains the ID's to delete
+# access_id	user_id	application_id	keeper_access_id	rows_per_key
+542	1	1	16	2
+527	2	1	20	2
+526	2	2	19	2
+525	2	4	18	3
+544	2	4	18	3
+524	2	5	17	3
+543	2	5	17	3
+531	10	1	40	2
+530	10	2	39	2
+529	10	4	38	2
+528	10	5	37	2
+535	25	1	80	2
+534	25	2	79	2
+533	25	4	78	2
+532	25	5	77	2

@@ -1,0 +1,13 @@
+Ticket 2 — Duplicate active access rows
+
+Constraint violated: One active access per user/application.
+ Ticket: A user has multiple active access rows for the same application.
+ Goal: Retain a single active row; revoke the others.
+ 
+Notes:
+Retrieved keys from user_access with matching user_id, application_id.
+Retrieved rows which contained the violating keys.
+Determined update rule:
+For each key if more than one row exists keep the row with the smallest access_id. Treat all others as duplicates. 
+Validated the rule against the data set
+Updated users that matched the rule to revoked status. Resolved
