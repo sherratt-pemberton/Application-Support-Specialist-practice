@@ -1,0 +1,192 @@
+1. High-level Application Support strategy (use for every ticket)
+This is the mental model you should apply before writing SQL.
+Application Support Incident Strategy
+Clarify the expected state
+ What should be true according to the ticket (access, status, environment)?
+Observe the actual state
+ Query the system to see what is currently true.
+Identify the mismatch
+ Pinpoint exactly where data or configuration deviates from expectation.
+Correct safely
+ Apply the smallest change needed, respecting auditability and scope.
+Verify the outcome
+ Re-query to confirm the system now matches the expected state.
+Note systemic issues (if any)
+ Decide whether this was a one-off or a process failure worth flagging.
+
+
+This strategy does not change from Ticket 1 to Ticket 200.
+
+2. Worked example — Ticket 0 (fully demonstrated)
+Ticket 0 — Locked user still has prod access
+Ticket:
+ Oliver Martin is marked as locked but can still access the Clinical Records (prod) application.
+Goal:
+ Revoke Oliver’s production access while preserving audit history.
+
+Step 1 — Clarify expected state
+Locked users must not have active prod access
+Step 2 — Observe actual state
+SELECT user_id, status
+FROM users
+WHERE name = 'Oliver Martin';
+
+Result: status = 'locked'
+SELECT ua.*
+FROM user_access ua
+JOIN applications a ON a.application_id = ua.application_id
+WHERE ua.user_id = 3
+AND a.app_name = 'Clinical Records'
+AND a.environment = 'prod';
+Result: active access exists → problem confirmed
+
+Step 3 — Identify mismatch
+User status = locked
+Access status = active
+
+
+
+Step 4 — Correct safely (soft revocation)
+UPDATE user_access ua
+JOIN applications a ON a.application_id = ua.application_id
+SET ua.status = 'revoked',
+ua.revoked_at = NOW()
+WHERE ua.user_id = 3
+AND a.app_name = 'Clinical Records'
+AND a.environment = 'prod'
+AND ua.status = 'active';
+
+Step 5 — Verify
+SELECT ua.status, ua.revoked_at
+FROM user_access ua
+JOIN applications a ON a.application_id = ua.application_id
+WHERE ua.user_id = 3
+AND a.app_name = 'Clinical Records'
+AND a.environment = 'prod';
+Result: status = 'revoked' with timestamp ✅
+
+Step 6 — Ticket note (conceptual)
+“User account is locked; production access revoked to align application access with identity state. Historical access retained for audit.”
+
+Ticket 1 — Revoked access missing audit timestamp
+Constraint violated: Revoked access must have revoked_at.
+ Ticket: Identify revoked access rows missing revoked_at.
+ Goal: Populate revoked_at with remediation timestamp.
+ Notes:
+
+Ticket 2 — Duplicate active access rows
+Constraint violated: One active access per user/application.
+ Ticket: A user has multiple active access rows for the same application.
+ Goal: Retain a single active row; revoke the others.
+ Notes:
+
+Ticket 3 — Future-dated access already active
+Constraint violated: Active access must be effective immediately.
+ Ticket: Access is marked active but has a granted_at in the future.
+ Goal: Prevent access until the effective date (revoke or correct status).
+ Notes:
+
+Ticket 4 — Open incidents for revoked access
+Constraint violated: Incidents should not remain open after access revocation.
+ Ticket: Open incidents exist for applications where user access is revoked.
+ Goal: Resolve inappropriate incidents with audit timestamp.
+ Notes:
+
+Ticket 5 — Resolved incidents missing resolution timestamp
+Constraint violated: Resolved incidents must have resolved_at.
+ Ticket: Incidents are marked resolved but missing resolution time.
+ Goal: Populate resolved_at with remediation timestamp.
+ Notes:
+
+Ticket 6 — Admin access exists in prod
+Constraint violated: Admin access in prod must be explicitly justified and minimal.
+ Ticket: Users have admin access to prod applications without justification.
+ Goal: Downgrade admin access to write.
+ Notes:
+
+Ticket 7 — Locked users still have prod access
+Constraint violated: Locked users must not have prod access.
+ Ticket: Locked users retain active prod access.
+ Goal: Revoke prod access and timestamp revocation.
+ Notes:
+
+Ticket 8 — Inactive users retain prod access
+Constraint violated: Inactive users must not have prod access.
+ Ticket: Inactive users retain active prod access.
+ Goal: Revoke prod access and timestamp revocation.
+ Notes:
+
+Ticket 9 — Multiple revoked rows without timestamps
+Constraint violated: All revoked access must be auditable.
+ Ticket: Multiple revoked access rows are missing revoked_at.
+ Goal: Populate missing audit timestamps.
+(Yes, this overlaps with Ticket 1 — that’s intentional and realistic. Ticket 1 is targeted; Ticket 9 is a sweep.)
+ Notes:
+
+Ticket 10 — Duplicate incidents for same user/app
+Constraint violated: Only one open incident per user/application.
+ Ticket: Duplicate open incidents exist for the same user and application.
+ Goal: Close duplicates, retain a single canonical incident.
+ Notes:
+
+Ticket 11 — Orphaned incidents (invalid user/app)
+Constraint violated: Incidents must reference valid users and applications.
+ Ticket: Incidents reference missing or invalid user/application records.
+ Goal: Resolve incidents and flag data integrity issue.
+ Notes:
+
+Ticket 12 — User has both revoked and active access for same app
+Constraint violated: Access state must be unambiguous.
+ Ticket: A user has both active and revoked access for the same application.
+ Goal: Retain active access only; revoke duplicates if necessary.
+ Notes:
+
+Ticket 13 — Incident exists for test but access is prod only
+Constraint violated: Incident environment must align with access environment.
+ Ticket: User has incidents in test but no test access (prod-only access exists).
+ Goal: Resolve incorrect incidents.
+ Notes:
+
+Ticket 14 — Access exists with NULL access_level
+Constraint violated: Access level must never be NULL.
+ Ticket: Access rows exist without an access level.
+ Goal: Default access level to read.
+ Notes:
+
+Ticket 15 — Prod access without any incidents ever
+Constraint reviewed: Access should be justified by usage.
+ Ticket: Users have long-standing prod access with zero incidents.
+ Goal: Flag for review only (no data change).
+ Notes:
+
+Ticket 16 — Open incidents older than 30 days
+Constraint violated: Incidents must not remain open beyond SLA.
+ Ticket: Open incidents exceed 30 days.
+ Goal: Resolve stale incidents with audit timestamp.
+ Notes:
+
+Ticket 17 — Access granted but user inactive
+Constraint violated: Inactive users must not have access.
+ Ticket: Access rows exist for inactive users.
+ Goal: Revoke access and timestamp.
+(Yes, overlaps with Ticket 8 — again, realistic overlap.)
+ Notes:
+
+Ticket 18 — Revoked access but future granted_at
+Constraint violated: Revoked access should not have future effective dates.
+ Ticket: Revoked access rows have granted_at in the future.
+ Goal: Correct timestamps to reflect revocation.
+ Notes:
+
+Ticket 19 — Multiple admin roles per user
+Constraint violated: Admin access should be minimal.
+ Ticket: Users have admin access to multiple applications.
+ Goal: Reduce admin roles to one; downgrade others.
+ Notes:
+
+Ticket 20 — Compliance sweep (state-based)
+Constraint enforced: Only active users may access prod systems.
+ Ticket: Identify all non-active users with prod access.
+ Goal: Revoke all prod access and timestamp.
+ Notes:
+
