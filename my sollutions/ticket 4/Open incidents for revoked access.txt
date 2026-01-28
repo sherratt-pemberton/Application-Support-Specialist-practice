@@ -1,0 +1,9 @@
+
+Ticket 4 — Open incidents for revoked access
+Constraint violated: Incidents should not remain open after access revocation.
+Ticket: Open incidents exist for applications where user access is revoked.
+Goal: Resolve inappropriate incidents with audit timestamp.
+Notes: retrieved a list of incidents which were open and user access has been revoked.
+Updated incidents to closed.
+verified effected open incidents status was now closed.
+resolved	
