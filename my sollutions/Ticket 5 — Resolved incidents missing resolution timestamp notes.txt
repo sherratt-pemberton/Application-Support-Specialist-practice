@@ -1,0 +1,7 @@
+Ticket 5 — Resolved incidents missing resolution timestamp
+Constraint violated: Resolved incidents must have resolved_at.
+ Ticket: Incidents are marked resolved but missing resolution time.
+ Goal: Populate resolved_at with remediation timestamp.
+Notes:
+ran query to search for incidents where resolved_at is null, rows found.
+ran update to set the resovled_at to the current system time.
