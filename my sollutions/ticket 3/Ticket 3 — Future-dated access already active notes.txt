@@ -1,0 +1,10 @@
+Ticket 3 — Future-dated access already active
+Constraint enforced:
+ Access must not be active before its effective date.
+Ticket:
+ User_Access rows exist where status is active but the granted date is later than the current system time.
+Goal:
+ Revoke access until the granted date is reached.
+Notes:
+ran query to search for users_access which is later then the system time, rows found.
+ran update to revoke the effected access, access will need to be re-granted when the granted date is reached.
