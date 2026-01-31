@@ -1,0 +1,12 @@
+Ticket 6 — Admin access exists in prod
+Constraint enforced:
+Production access levels must be limited to approved, non-elevated roles by default.
+Ticket:
+User access records exist in production where the access_level is set to an elevated value (e.g. admin or equivalent) that exceeds standard operational requirements.
+Goal:
+Downgrade elevated access levels in production to the standard write level.
+Notes:
+ran select to confirm ticket violation is present in the database - rows found which contained the violation.
+ran an update against the effected rows to lower the access_level from "admin" to "write"
+ran select to verify the constraint was no longer in the database - passed.
+resolved.
